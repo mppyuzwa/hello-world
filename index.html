@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iran Geopolitical Risk — Market Monitor</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+  :root {
+    --bg-primary: #080c14;
+    --bg-secondary: #0d1520;
+    --bg-card: #111b2a;
+    --bg-card-hover: #162031;
+    --border: #1e2d42;
+    --border-bright: #2a3f5a;
+    --text-primary: #e8edf5;
+    --text-secondary: #8899aa;
+    --text-dim: #4a5a6a;
+    --orange: #ff6b2b;
+    --orange-dim: #c44e1a;
+    --gold: #f5c842;
+    --gold-dim: #b89020;
+    --green: #22c55e;
+    --red: #ef4444;
+    --red-dim: #991b1b;
+    --blue: #3b82f6;
+    --cyan: #06b6d4;
+    --purple: #a855f7;
+    --alert: #ff3b30;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  /* ── TOP BAR ─────────────────────────────────────────── */
+  .topbar {
+    background: #060a10;
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .brand { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-primary); }
+  .brand span { color: var(--orange); }
+
+  .alert-badge {
+    background: var(--alert);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    padding: 2px 7px;
+    border-radius: 2px;
+    animation: pulse-badge 2s ease-in-out infinite;
+    text-transform: uppercase;
+  }
+  @keyframes pulse-badge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .ticker-wrap {
+    flex: 1;
+    overflow: hidden;
+    margin: 0 20px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+  .ticker-inner {
+    display: flex;
+    gap: 0;
+    animation: ticker 60s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes ticker {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .tick-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
+  }
+  .tick-label { color: var(--text-dim); font-size: 10px; }
+  .tick-val { font-size: 11px; font-weight: 600; }
+  .tick-chg { font-size: 10px; }
+  .up { color: var(--green); }
+  .dn { color: var(--red); }
+
+  .clock { color: var(--text-secondary); font-size: 11px; white-space: nowrap; }
+
+  /* ── ALERT BANNER ─────────────────────────────────────── */
+  .alert-banner {
+    background: linear-gradient(90deg, #1a0505 0%, #2a0808 50%, #1a0505 100%);
+    border-bottom: 1px solid #5a1010;
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+  }
+  .alert-icon { color: var(--alert); font-size: 13px; animation: pulse-badge 1.5s ease-in-out infinite; }
+  .alert-text { color: #ff9090; font-weight: 600; letter-spacing: 0.04em; }
+  .alert-detail { color: var(--text-dim); }
+
+  /* ── LAYOUT ───────────────────────────────────────────── */
+  .shell {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: calc(100vh - 60px);
+    gap: 0;
+  }
+
+  .sidebar {
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+  }
+
+  .main {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+  }
+
+  /* ── SECTION HEADER ───────────────────────────────────── */
+  .sec-hdr {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+
+  /* ── RISK GAUGE ────────────────────────────────────────── */
+  .risk-gauge-wrap {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    text-align: center;
+  }
+  .gauge-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .gauge-svg-wrap { position: relative; display: inline-block; }
+  .gauge-score {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+  .gauge-num { font-size: 28px; font-weight: 700; color: #ff4444; line-height: 1; }
+  .gauge-label { font-size: 9px; color: var(--text-dim); letter-spacing: 0.12em; margin-top: 2px; }
+  .gauge-status {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #ff4444;
+    margin-top: 8px;
+  }
+  .gauge-components {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .gc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+  }
+  .gc-label { color: var(--text-secondary); }
+  .gc-bar-wrap { flex: 1; margin: 0 8px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .gc-bar { height: 100%; border-radius: 2px; transition: width 1s ease; }
+  .gc-val { color: var(--text-primary); font-weight: 600; min-width: 28px; text-align: right; }
+
+  /* ── STAT CARDS ───────────────────────────────────────── */
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 12px;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border-bright); }
+  .stat-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .stat-name { font-size: 9px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-val { font-size: 18px; font-weight: 700; line-height: 1; }
+  .stat-sub { font-size: 10px; color: var(--text-secondary); margin-top: 3px; }
+  .stat-chg { font-size: 11px; font-weight: 600; text-align: right; }
+  .stat-tag {
+    display: inline-block;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-top: 4px;
+    font-weight: 700;
+  }
+  .tag-oil { background: #2a1a08; color: var(--orange); border: 1px solid #4a2a10; }
+  .tag-metal { background: #1a1a08; color: var(--gold); border: 1px solid #3a3010; }
+  .tag-eq { background: #081a10; color: var(--green); border: 1px solid #103a18; }
+  .tag-fi { background: #08101a; color: var(--blue); border: 1px solid #103050; }
+
+  /* ── GRID LAYOUTS ─────────────────────────────────────── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+  /* ── CHART CARDS ──────────────────────────────────────── */
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px;
+    position: relative;
+  }
+  .chart-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .chart-title { font-size: 10px; font-weight: 700; color: var(--text-primary); letter-spacing: 0.06em; text-transform: uppercase; }
+  .chart-meta { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
+  .chart-val { font-size: 16px; font-weight: 700; }
+  .chart-chg { font-size: 10px; font-weight: 600; }
+  .chart-wrap { position: relative; height: 140px; }
+  .chart-wrap-lg { position: relative; height: 200px; }
+  .chart-wrap-xl { position: relative; height: 240px; }
+
+  /* ── EVENT TIMELINE ───────────────────────────────────── */
+  .timeline { display: flex; flex-direction: column; gap: 0; }
+  .tl-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-dot-wrap { display: flex; flex-direction: column; align-items: center; min-width: 12px; }
+  .tl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  .tl-line { flex: 1; width: 1px; background: var(--border); margin-top: 2px; }
+  .tl-content { flex: 1; }
+  .tl-date { font-size: 9px; color: var(--text-dim); letter-spacing: 0.08em; margin-bottom: 2px; }
+  .tl-headline { font-size: 10px; color: var(--text-primary); line-height: 1.45; font-weight: 600; }
+  .tl-impact {
+    font-size: 9px;
+    color: var(--text-secondary);
+    margin-top: 3px;
+  }
+  .tl-badge {
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 1px 5px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+  .sev-critical { background: #3a0808; color: #ff8080; border: 1px solid #6a1010; }
+  .sev-high { background: #2a1a08; color: #ffb060; border: 1px solid #5a3010; }
+  .sev-medium { background: #1a1a08; color: var(--gold); border: 1px solid #4a4010; }
+
+  /* ── CORRELATION TABLE ────────────────────────────────── */
+  .corr-wrap { overflow-x: auto; }
+  .corr-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+  .corr-table th {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 6px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .corr-table td {
+    padding: 5px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  .corr-label { text-align: left !important; color: var(--text-secondary); font-size: 10px; }
+
+  /* ── HORMUZ FLOW ──────────────────────────────────────── */
+  .flow-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .flow-item { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 3px; padding: 8px; }
+  .flow-label { font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
+  .flow-val { font-size: 14px; font-weight: 700; }
+  .flow-sub { font-size: 9px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ── IRAN OIL EXPORTS ─────────────────────────────────── */
+  .progress-row { margin-bottom: 8px; }
+  .pr-header { display: flex; justify-content: space-between; margin-bottom: 3px; }
+  .pr-label { font-size: 10px; color: var(--text-secondary); }
+  .pr-val { font-size: 10px; font-weight: 700; }
+  .pr-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .pr-fill { height: 100%; border-radius: 2px; }
+
+  /* ── FOOTER ───────────────────────────────────────────── */
+  .footer {
+    background: #060a10;
+    border-top: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+  .footer a { color: var(--text-dim); text-decoration: none; }
+
+  /* ── SPREAD INDICATOR ─────────────────────────────────── */
+  .spread-bar {
+    height: 20px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--green) 0%, var(--gold) 50%, var(--red) 100%);
+    position: relative;
+    margin: 8px 0;
+  }
+  .spread-needle {
+    position: absolute;
+    top: -3px;
+    width: 2px;
+    height: 26px;
+    background: white;
+    border-radius: 1px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 6px rgba(255,255,255,0.8);
+  }
+
+  /* ── SANCTIONS TRACKER ────────────────────────────────── */
+  .sanction-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+  }
+  .sanction-row:last-child { border-bottom: none; }
+  .sanction-entity { color: var(--text-secondary); }
+  .sanction-status {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .s-active { background: #2a0808; color: #ff8080; border: 1px solid #5a1010; }
+  .s-partial { background: #1a1a08; color: var(--gold); border: 1px solid #4a4010; }
+  .s-lifted { background: #081a10; color: var(--green); border: 1px solid #103a18; }
+
+  /* ── VOLATILITY ───────────────────────────────────────── */
+  .vol-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+  }
+  .vol-row:last-child { border-bottom: none; }
+  .vol-name { color: var(--text-secondary); flex: 1; }
+  .vol-val { font-weight: 700; min-width: 40px; text-align: right; }
+  .vol-spark { flex: 2; height: 20px; }
+
+  /* ── BLINKING DOT ─────────────────────────────────────── */
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  /* ── RESPONSIVE ───────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="brand"><span>IRAN</span> GEOPOLITICAL RISK</span>
+    <span class="alert-badge">ELEVATED</span>
+    <span class="live-dot"></span>
+  </div>
+  <div class="ticker-wrap">
+    <div class="ticker-inner" id="ticker"></div>
+  </div>
+  <div class="clock" id="clock"></div>
+</div>
+
+<!-- ALERT BANNER -->
+<div class="alert-banner">
+  <span class="alert-icon">▲</span>
+  <span class="alert-text">ACTIVE RISK EVENT:</span>
+  <span class="alert-detail">Iran-linked drone attacks on Red Sea shipping reported; IRGC naval exercises in Strait of Hormuz ongoing — WTI +2.3%, Gold +1.1%</span>
+</div>
+
+<!-- SHELL -->
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- GEOPOLITICAL RISK GAUGE -->
+    <div class="risk-gauge-wrap">
+      <div class="gauge-title">Iran Geopolitical Risk Index</div>
+      <div class="gauge-svg-wrap">
+        <canvas id="gaugeChart" width="200" height="120"></canvas>
+        <div class="gauge-score">
+          <div class="gauge-num" id="riskNum">78</div>
+          <div class="gauge-label">/ 100</div>
+        </div>
+      </div>
+      <div class="gauge-status" id="riskStatus">HIGH RISK</div>
+      <div class="gauge-components">
+        <div class="gc-row">
+          <span class="gc-label">Military</span>
+          <div class="gc-bar-wrap"><div class="gc-bar" style="width:85%;background:#ef4444;"></div></div>
+          <span class="gc-val" style="color:#ef4444;">85</span>
+        </div>
+        <div class="gc-row">
+          <span class="gc-label">Nuclear</span>
+          <div class="gc-bar-wrap"><div class="gc-bar" style="width:72%;background:#f97316;"></div></div>
+          <span class="gc-val" style="color:#f97316;">72</span>
+        </div>
+        <div class="gc-row">
+          <span class="gc-label">Sanctions</span>
+          <div class="gc-bar-wrap"><div class="gc-bar" style="width:90%;background:#ef4444;"></div></div>
+          <span class="gc-val" style="color:#ef4444;">90</span>
+        </div>
+        <div class="gc-row">
+          <span class="gc-label">Hormuz Risk</span>
+          <div class="gc-bar-wrap"><div class="gc-bar" style="width:65%;background:#eab308;"></div></div>
+          <span class="gc-val" style="color:#eab308;">65</span>
+        </div>
+        <div class="gc-row">
+          <span class="gc-label">Proxy Activity</span>
+          <div class="gc-bar-wrap"><div class="gc-bar" style="width:80%;background:#f97316;"></div></div>
+          <span class="gc-val" style="color:#f97316;">80</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- IRAN OIL EXPORTS -->
+    <div class="chart-card">
+      <div class="sec-hdr">Iran Crude Exports</div>
+      <div class="progress-row">
+        <div class="pr-header"><span class="pr-label">To China</span><span class="pr-val" style="color:var(--orange)">1.8 mb/d</span></div>
+        <div class="pr-bar"><div class="pr-fill" style="width:75%;background:var(--orange)"></div></div>
+      </div>
+      <div class="progress-row">
+        <div class="pr-header"><span class="pr-label">Shadow Fleet</span><span class="pr-val" style="color:var(--red)">0.4 mb/d</span></div>
+        <div class="pr-bar"><div class="pr-fill" style="width:17%;background:var(--red)"></div></div>
+      </div>
+      <div class="progress-row">
+        <div class="pr-header"><span class="pr-label">Other (evading)</span><span class="pr-val" style="color:var(--gold)">0.2 mb/d</span></div>
+        <div class="pr-bar"><div class="pr-fill" style="width:8%;background:var(--gold)"></div></div>
+      </div>
+      <div style="margin-top:8px;display:flex;justify-content:space-between;font-size:9px;color:var(--text-dim);">
+        <span>Total: ~2.4 mb/d (est.)</span>
+        <span style="color:var(--orange)">OPEC+ quota: 0</span>
+      </div>
+    </div>
+
+    <!-- STRAIT OF HORMUZ -->
+    <div class="chart-card">
+      <div class="sec-hdr">Strait of Hormuz</div>
+      <div class="flow-grid">
+        <div class="flow-item">
+          <div class="flow-label">Daily Flow</div>
+          <div class="flow-val" style="color:var(--orange)">17.3 mb/d</div>
+          <div class="flow-sub">crude + products</div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-label">World Supply</div>
+          <div class="flow-val" style="color:var(--gold)">17%</div>
+          <div class="flow-sub">transits here</div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-label">LNG Flow</div>
+          <div class="flow-val" style="color:var(--cyan)">4 bcf/d</div>
+          <div class="flow-sub">Qatari LNG</div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-label">Closure Risk</div>
+          <div class="flow-val" style="color:var(--red)">HIGH</div>
+          <div class="flow-sub">30-day horizon</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <div style="font-size:9px;color:var(--text-dim);margin-bottom:4px;">Tanker disruption risk (0–100)</div>
+        <div class="spread-bar" style="height:14px;">
+          <div class="spread-needle" style="left:68%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-dim);">
+          <span>LOW</span><span>MODERATE</span><span>HIGH</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SANCTIONS TRACKER -->
+    <div class="chart-card">
+      <div class="sec-hdr">Sanctions Status</div>
+      <div class="sanction-row">
+        <span class="sanction-entity">Oil Export Ban (US)</span>
+        <span class="sanction-status s-active">Active</span>
+      </div>
+      <div class="sanction-row">
+        <span class="sanction-entity">SWIFT Exclusion</span>
+        <span class="sanction-status s-active">Active</span>
+      </div>
+      <div class="sanction-row">
+        <span class="sanction-entity">IRGC Designation</span>
+        <span class="sanction-status s-active">Active</span>
+      </div>
+      <div class="sanction-row">
+        <span class="sanction-entity">Nuclear Deal (JCPOA)</span>
+        <span class="sanction-status s-partial">Collapsed</span>
+      </div>
+      <div class="sanction-row">
+        <span class="sanction-entity">EU Energy Embargo</span>
+        <span class="sanction-status s-active">Active</span>
+      </div>
+      <div class="sanction-row">
+        <span class="sanction-entity">Shadow Fleet Seizures</span>
+        <span class="sanction-status s-partial">Ongoing</span>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- KEY METRICS ROW -->
+    <div class="grid-4">
+      <div class="stat-card">
+        <div class="stat-name">WTI Crude</div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" style="color:var(--orange)" id="wti-val">$81.42</div>
+            <div class="stat-sub">per barrel</div>
+          </div>
+          <div>
+            <div class="stat-chg up" id="wti-chg">▲ +2.3%</div>
+            <span class="stat-tag tag-oil">Oil</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-name">Brent Crude</div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" style="color:var(--orange)" id="brent-val">$85.17</div>
+            <div class="stat-sub">per barrel</div>
+          </div>
+          <div>
+            <div class="stat-chg up" id="brent-chg">▲ +2.1%</div>
+            <span class="stat-tag tag-oil">Oil</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-name">Gold Spot</div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" style="color:var(--gold)" id="gold-val">$2,941</div>
+            <div class="stat-sub">per troy oz</div>
+          </div>
+          <div>
+            <div class="stat-chg up" id="gold-chg">▲ +1.1%</div>
+            <span class="stat-tag tag-metal">Metal</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-name">US 10Y Yield</div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" style="color:var(--blue)" id="t10y-val">4.28%</div>
+            <div class="stat-sub">Treasury</div>
+          </div>
+          <div>
+            <div class="stat-chg dn" id="t10y-chg">▼ -8bps</div>
+            <span class="stat-tag tag-fi">Fixed Inc</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-4">
+      <div class="stat-card">
+        <div class="stat-name">Brent-WTI Spread</div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" style="color:var(--cyan)" id="spread-val">$3.75</div>
+            <div class="stat-sub">widening</div>
+          </div>
+          <div>
+            <div class="stat-chg dn">▼ -$0.12</div>
+            <span class="stat-tag tag-oil">Spread</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-name">S&P 500</div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" style="color:var(--green)" id="spx-val">5,648</div>
+            <div class="stat-sub">Index</div>
+          </div>
+          <div>
+            <div class="stat-chg dn" id="spx-chg">▼ -0.8%</div>
+            <span class="stat-tag tag-eq">Equity</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-name">TSX Composite</div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" style="color:var(--green)" id="tsx-val">24,821</div>
+            <div class="stat-sub">Canada</div>
+          </div>
+          <div>
+            <div class="stat-chg up" id="tsx-chg">▲ +0.4%</div>
+            <span class="stat-tag tag-eq">Equity</span>
+          </div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-name">HY Credit Spread</div>
+        <div class="stat-row">
+          <div>
+            <div class="stat-val" style="color:var(--red)" id="hy-val">312bps</div>
+            <div class="stat-sub">OAS over UST</div>
+          </div>
+          <div>
+            <div class="stat-chg dn" id="hy-chg">▲ +18bps</div>
+            <span class="stat-tag tag-fi">Credit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OIL + GOLD CHARTS -->
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div>
+            <div class="chart-title">WTI Crude Oil — 90 Day</div>
+            <div class="chart-meta">Spot price with key Iran event markers</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-val" style="color:var(--orange)">$81.42</div>
+            <div class="chart-chg up">▲ +$1.84 today</div>
+          </div>
+        </div>
+        <div class="chart-wrap-lg">
+          <canvas id="wtiChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div>
+            <div class="chart-title">Gold Spot — Safe Haven Flow</div>
+            <div class="chart-meta">XAU/USD with geopolitical risk overlay</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-val" style="color:var(--gold)">$2,941</div>
+            <div class="chart-chg up">▲ +$32 today</div>
+          </div>
+        </div>
+        <div class="chart-wrap-lg">
+          <canvas id="goldChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- EQUITY + FIXED INCOME -->
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div>
+            <div class="chart-title">Equity — S&P 500 vs TSX Energy</div>
+            <div class="chart-meta">Indexed to 100 (90 days ago) — TSX energy benefits from higher oil</div>
+          </div>
+        </div>
+        <div class="chart-wrap-lg">
+          <canvas id="equityChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div>
+            <div class="chart-title">Fixed Income — UST 10Y &amp; HY Spreads</div>
+            <div class="chart-meta">Flight-to-quality: yields fall, credit widens on Iran risk</div>
+          </div>
+        </div>
+        <div class="chart-wrap-lg">
+          <canvas id="fiChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- METALS ROW -->
+    <div class="grid-3">
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div>
+            <div class="chart-title">Silver</div>
+            <div class="chart-meta">XAG/USD — safe haven + industrial</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-val" style="color:var(--gold)">$33.14</div>
+            <div class="chart-chg up">▲ +0.8%</div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="silverChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div>
+            <div class="chart-title">Copper</div>
+            <div class="chart-meta">HG1 — risk-off pressure</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-val" style="color:var(--red)">$4.18/lb</div>
+            <div class="chart-chg dn">▼ -0.6%</div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="copperChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div>
+            <div class="chart-title">Nat Gas (Henry Hub)</div>
+            <div class="chart-meta">LNG rerouting impact</div>
+          </div>
+          <div style="text-align:right">
+            <div class="chart-val" style="color:var(--cyan)">$3.42</div>
+            <div class="chart-chg up">▲ +1.4%</div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="ngChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- CORRELATION + TIMELINE -->
+    <div class="grid-2">
+
+      <div class="chart-card">
+        <div class="sec-hdr">Asset Correlation vs Iran Risk Index (90d)</div>
+        <div class="corr-wrap">
+          <table class="corr-table" id="corrTable">
+            <thead>
+              <tr>
+                <th class="corr-label">Asset</th>
+                <th>Correlation</th>
+                <th>Beta</th>
+                <th>Signal</th>
+              </tr>
+            </thead>
+            <tbody id="corrBody"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px">
+          <div class="sec-hdr">Iran Risk — 90 Day Trend</div>
+          <div class="chart-wrap">
+            <canvas id="riskTrendChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="sec-hdr">Geopolitical Event Timeline</div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+    </div>
+
+    <!-- VOLATILITY SURFACE -->
+    <div class="chart-card">
+      <div class="sec-hdr">Implied Volatility — Geopolitical Premium</div>
+      <div class="grid-3" style="margin-top:4px">
+        <div>
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;">Oil Vol (OVX)</div>
+          <div class="vol-row"><span class="vol-name">1-Month</span><span class="vol-val" style="color:var(--orange)">38.4%</span></div>
+          <div class="vol-row"><span class="vol-name">3-Month</span><span class="vol-val" style="color:var(--orange)">35.1%</span></div>
+          <div class="vol-row"><span class="vol-name">6-Month</span><span class="vol-val" style="color:var(--orange)">32.6%</span></div>
+          <div class="vol-row"><span class="vol-name">Call Skew</span><span class="vol-val up">+4.2pp</span></div>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;">Equity Vol (VIX)</div>
+          <div class="vol-row"><span class="vol-name">Spot VIX</span><span class="vol-val" style="color:var(--red)">22.8</span></div>
+          <div class="vol-row"><span class="vol-name">VIX3M</span><span class="vol-val" style="color:var(--gold)">21.3</span></div>
+          <div class="vol-row"><span class="vol-name">VIX6M</span><span class="vol-val" style="color:var(--green)">20.1</span></div>
+          <div class="vol-row"><span class="vol-name">Term Slope</span><span class="vol-val dn">-2.7pp</span></div>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:6px;">Rates / FX Vol</div>
+          <div class="vol-row"><span class="vol-name">US 10Y Swaption</span><span class="vol-val" style="color:var(--blue)">115bps</span></div>
+          <div class="vol-row"><span class="vol-name">USD/CAD 1M IV</span><span class="vol-val" style="color:var(--cyan)">8.3%</span></div>
+          <div class="vol-row"><span class="vol-name">Gold 1M IV</span><span class="vol-val" style="color:var(--gold)">16.2%</span></div>
+          <div class="vol-row"><span class="vol-name">Oil/Gold Ratio</span><span class="vol-val" style="color:var(--text-primary)">0.0277</span></div>
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <div style="font-size:9px;color:var(--text-dim);margin-bottom:4px;">OVX Implied Vol Surface (30-day)</div>
+        <div class="chart-wrap">
+          <canvas id="volChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENARIO ANALYSIS -->
+    <div class="chart-card">
+      <div class="sec-hdr">Scenario Analysis — Iran Escalation Paths</div>
+      <div class="chart-wrap-xl">
+        <canvas id="scenarioChart"></canvas>
+      </div>
+      <div class="grid-3" style="margin-top:10px;gap:8px">
+        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-left:3px solid var(--green);padding:8px;border-radius:3px">
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.1em">Base Case (55%)</div>
+          <div style="font-size:10px;color:var(--text-primary);line-height:1.5">Proxy tensions persist. No Hormuz closure. WTI $75-85. Sanctions maintained. Shadow fleet continues.</div>
+        </div>
+        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-left:3px solid var(--gold);padding:8px;border-radius:3px">
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.1em">Bull Oil (30%)</div>
+          <div style="font-size:10px;color:var(--text-primary);line-height:1.5">Major strike on Iranian oil infra. Partial Hormuz disruption. WTI $110-130. Gold +15%. SPX -8%.</div>
+        </div>
+        <div style="background:var(--bg-secondary);border:1px solid var(--border);border-left:3px solid var(--red);padding:8px;border-radius:3px">
+          <div style="font-size:9px;color:var(--text-dim);margin-bottom:4px;text-transform:uppercase;letter-spacing:.1em">Bear Oil (15%)</div>
+          <div style="font-size:10px;color:var(--text-primary);line-height:1.5">Diplomatic breakthrough, sanctions relief. 1+ mb/d Iran supply returns. WTI $60-65. OPEC+ response key.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<div class="footer">
+  <span>Iran Geopolitical Risk Monitor · Prices delayed 15 min · Data: simulated for illustrative purposes</span>
+  <span><span class="live-dot"></span> Live · Updated <span id="lastUpdate"></span></span>
+</div>
+
+<script>
+// ── UTILITIES ──────────────────────────────────────────────────
+Chart.register(window['chartjs-plugin-annotation']);
+
+const C = (id) => document.getElementById(id);
+
+function seededRand(seed) {
+  let s = seed;
+  return () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+}
+
+function genSeries(len, start, drift, vol, seed=42) {
+  const r = seededRand(seed);
+  const out = [start];
+  for (let i = 1; i < len; i++) {
+    const shock = (r() - 0.5) * 2 * vol;
+    out.push(Math.max(out[i-1] + drift + shock, start * 0.5));
+  }
+  return out;
+}
+
+function last90Days() {
+  const d = [];
+  const now = new Date('2026-03-01');
+  for (let i = 89; i >= 0; i--) {
+    const t = new Date(now); t.setDate(t.getDate() - i);
+    d.push(t.toLocaleDateString('en-US', { month:'short', day:'numeric' }));
+  }
+  return d;
+}
+
+const LABELS = last90Days();
+const N = 90;
+
+// ── COLORS ────────────────────────────────────────────────────
+const CHART_DEFAULTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: { duration: 800, easing: 'easeInOutQuart' },
+  plugins: { legend: { display: false }, tooltip: {
+    backgroundColor: '#111b2a',
+    borderColor: '#2a3f5a',
+    borderWidth: 1,
+    titleColor: '#8899aa',
+    bodyColor: '#e8edf5',
+    titleFont: { family: 'SF Mono, monospace', size: 10 },
+    bodyFont: { family: 'SF Mono, monospace', size: 11, weight: 'bold' },
+    padding: 8,
+  }},
+  scales: {
+    x: {
+      grid: { color: '#1e2d42', lineWidth: 0.5 },
+      ticks: { color: '#4a5a6a', font: { family: 'SF Mono, monospace', size: 9 }, maxTicksLimit: 8 },
+    },
+    y: {
+      grid: { color: '#1e2d42', lineWidth: 0.5 },
+      ticks: { color: '#4a5a6a', font: { family: 'SF Mono, monospace', size: 9 } },
+    }
+  }
+};
+
+function lineDataset(data, color, fill=false, tension=0.35) {
+  return {
+    data,
+    borderColor: color,
+    borderWidth: 2,
+    pointRadius: 0,
+    pointHoverRadius: 4,
+    fill: fill ? { target: 'origin', above: color + '18' } : false,
+    tension,
+  };
+}
+
+// ── EVENT ANNOTATIONS ─────────────────────────────────────────
+const events = [
+  { day: 5,  label: 'IRGC drills', color: '#ff4444' },
+  { day: 18, label: 'Tanker seized', color: '#ff4444' },
+  { day: 38, label: 'Sanctions tightened', color: '#f97316' },
+  { day: 55, label: 'Drone attack', color: '#ff4444' },
+  { day: 72, label: 'Nuclear talks fail', color: '#ef4444' },
+  { day: 85, label: 'Hormuz exercises', color: '#ff4444' },
+];
+
+function eventAnnotations(datasets, scaleY='y') {
+  const ann = {};
+  events.forEach((e, i) => {
+    ann['line' + i] = {
+      type: 'line', xMin: e.day, xMax: e.day,
+      borderColor: e.color + '60', borderWidth: 1, borderDash: [3,3],
+      label: { display: true, content: e.label, position: 'start',
+        font: { size: 8, family: 'SF Mono, monospace' },
+        color: e.color, backgroundColor: 'transparent', padding: 2 }
+    };
+  });
+  return ann;
+}
+
+// ── WTI CHART ─────────────────────────────────────────────────
+const wtiData = genSeries(N, 74, 0.08, 1.4, 11);
+new Chart(C('wtiChart'), {
+  type: 'line',
+  data: { labels: LABELS, datasets: [lineDataset(wtiData, '#ff6b2b', true)] },
+  options: { ...CHART_DEFAULTS,
+    plugins: { ...CHART_DEFAULTS.plugins,
+      annotation: { annotations: eventAnnotations(wtiData) }
+    },
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => '$' + v.toFixed(1) } }
+    }
+  }
+});
+
+// ── GOLD CHART ────────────────────────────────────────────────
+const goldData = genSeries(N, 2700, 2.7, 18, 22);
+new Chart(C('goldChart'), {
+  type: 'line',
+  data: { labels: LABELS, datasets: [lineDataset(goldData, '#f5c842', true)] },
+  options: { ...CHART_DEFAULTS,
+    plugins: { ...CHART_DEFAULTS.plugins,
+      annotation: { annotations: eventAnnotations(goldData) }
+    },
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => '$' + v.toFixed(0) } }
+    }
+  }
+});
+
+// ── EQUITY CHART ──────────────────────────────────────────────
+const spxIdx = genSeries(N, 100, -0.02, 0.8, 33).map(v => +v.toFixed(2));
+const tsxEngIdx = genSeries(N, 100, 0.09, 0.9, 44).map(v => +v.toFixed(2));
+new Chart(C('equityChart'), {
+  type: 'line',
+  data: { labels: LABELS, datasets: [
+    { ...lineDataset(spxIdx, '#22c55e', false), label: 'S&P 500' },
+    { ...lineDataset(tsxEngIdx, '#f5c842', false), label: 'TSX Energy' },
+  ]},
+  options: { ...CHART_DEFAULTS,
+    plugins: { ...CHART_DEFAULTS.plugins,
+      legend: { display: true, position: 'top', align: 'end',
+        labels: { color: '#8899aa', font: { family: 'SF Mono, monospace', size: 9 }, boxWidth: 12, padding: 10 } }
+    },
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v + '' } }
+    }
+  }
+});
+
+// ── FIXED INCOME CHART ────────────────────────────────────────
+const t10y = genSeries(N, 4.6, -0.003, 0.06, 55);
+const hySpread = genSeries(N, 265, 0.5, 5, 66);
+new Chart(C('fiChart'), {
+  type: 'line',
+  data: { labels: LABELS, datasets: [
+    { ...lineDataset(t10y, '#3b82f6'), label: '10Y Yield (%)' },
+    { ...lineDataset(hySpread.map(v=>v/100), '#ef4444'), label: 'HY Spread / 100' },
+  ]},
+  options: { ...CHART_DEFAULTS,
+    plugins: { ...CHART_DEFAULTS.plugins,
+      legend: { display: true, position: 'top', align: 'end',
+        labels: { color: '#8899aa', font: { family: 'SF Mono, monospace', size: 9 }, boxWidth: 12, padding: 10 } }
+    },
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v.toFixed(2) } }
+    }
+  }
+});
+
+// ── SILVER CHART ──────────────────────────────────────────────
+const silverData = genSeries(N, 30.5, 0.028, 0.4, 77);
+new Chart(C('silverChart'), {
+  type: 'line',
+  data: { labels: LABELS, datasets: [lineDataset(silverData, '#e2e8f0', true)] },
+  options: { ...CHART_DEFAULTS,
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => '$' + v.toFixed(2) } }
+    }
+  }
+});
+
+// ── COPPER CHART ──────────────────────────────────────────────
+const copperData = genSeries(N, 4.35, -0.002, 0.05, 88);
+new Chart(C('copperChart'), {
+  type: 'line',
+  data: { labels: LABELS, datasets: [lineDataset(copperData, '#ef4444', true)] },
+  options: { ...CHART_DEFAULTS,
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => '$' + v.toFixed(2) } }
+    }
+  }
+});
+
+// ── NAT GAS CHART ─────────────────────────────────────────────
+const ngData = genSeries(N, 2.8, 0.006, 0.12, 99);
+new Chart(C('ngChart'), {
+  type: 'line',
+  data: { labels: LABELS, datasets: [lineDataset(ngData, '#06b6d4', true)] },
+  options: { ...CHART_DEFAULTS,
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => '$' + v.toFixed(2) } }
+    }
+  }
+});
+
+// ── RISK TREND CHART ──────────────────────────────────────────
+const riskTrend = genSeries(N, 45, 0.36, 4, 111);
+new Chart(C('riskTrendChart'), {
+  type: 'line',
+  data: { labels: LABELS, datasets: [lineDataset(riskTrend, '#ef4444', true)] },
+  options: { ...CHART_DEFAULTS,
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y,
+        min: 0, max: 100,
+        ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v }
+      }
+    }
+  }
+});
+
+// ── VOLATILITY CHART ──────────────────────────────────────────
+const volData = [29.1, 32.4, 35.8, 38.4, 36.1, 34.2, 33.0, 35.5, 37.8, 39.1, 38.4];
+const volLabels = ['1W','2W','3W','1M','6W','2M','10W','3M','4M','5M','6M'];
+new Chart(C('volChart'), {
+  type: 'bar',
+  data: { labels: volLabels, datasets: [{
+    data: volData,
+    backgroundColor: volData.map(v => v > 37 ? '#ef444460' : v > 34 ? '#f9731660' : '#22c55e40'),
+    borderColor: volData.map(v => v > 37 ? '#ef4444' : v > 34 ? '#f97316' : '#22c55e'),
+    borderWidth: 1, borderRadius: 2,
+  }]},
+  options: { ...CHART_DEFAULTS,
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => v + '%' } }
+    }
+  }
+});
+
+// ── SCENARIO CHART ────────────────────────────────────────────
+const scLabels = ['Dec','Jan','Feb','Mar','Apr','May','Jun'];
+const scBase = [79, 80, 81, 81.4, 82, 83, 82];
+const scBull = [79, 82, 88, 95, 115, 125, 120];
+const scBear = [79, 77, 74, 70, 66, 63, 62];
+new Chart(C('scenarioChart'), {
+  type: 'line',
+  data: { labels: scLabels, datasets: [
+    { ...lineDataset(scBase, '#22c55e'), label: 'Base (55%)', borderDash: [] },
+    { ...lineDataset(scBull, '#ef4444'), label: 'Escalation (30%)', borderDash: [5,3] },
+    { ...lineDataset(scBear, '#3b82f6'), label: 'Diplomacy (15%)', borderDash: [5,3] },
+  ]},
+  options: { ...CHART_DEFAULTS,
+    plugins: { ...CHART_DEFAULTS.plugins,
+      legend: { display: true, position: 'top', align: 'end',
+        labels: { color: '#8899aa', font: { family: 'SF Mono, monospace', size: 10 }, boxWidth: 14, padding: 12 } }
+    },
+    scales: { ...CHART_DEFAULTS.scales,
+      y: { ...CHART_DEFAULTS.scales.y, ticks: { ...CHART_DEFAULTS.scales.y.ticks, callback: v => 'WTI $' + v } }
+    }
+  }
+});
+
+// ── GAUGE CHART (doughnut arc) ────────────────────────────────
+const gaugeVal = 78;
+const gaugeColors = ['#ef4444', '#1e2d42'];
+new Chart(C('gaugeChart'), {
+  type: 'doughnut',
+  data: {
+    datasets: [{
+      data: [gaugeVal, 100 - gaugeVal],
+      backgroundColor: gaugeColors,
+      borderWidth: 0,
+      circumference: 180,
+      rotation: 270,
+    }]
+  },
+  options: {
+    responsive: false,
+    animation: { duration: 1200, easing: 'easeOutQuart' },
+    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+    cutout: '70%',
+  }
+});
+
+// ── CORRELATION TABLE ─────────────────────────────────────────
+const corrData = [
+  { asset: 'WTI Crude',      corr: 0.82, beta: 1.24, signal: 'Long', color: '#22c55e', tag: 'up' },
+  { asset: 'Brent Crude',    corr: 0.84, beta: 1.31, signal: 'Long', color: '#22c55e', tag: 'up' },
+  { asset: 'Gold',           corr: 0.71, beta: 0.88, signal: 'Long', color: '#22c55e', tag: 'up' },
+  { asset: 'Silver',         corr: 0.58, beta: 0.72, signal: 'Long', color: '#22c55e', tag: 'up' },
+  { asset: 'Nat Gas',        corr: 0.44, beta: 0.51, signal: 'Neutral', color: '#f5c842', tag: 'neu' },
+  { asset: 'S&P 500',        corr: -0.63, beta: -0.74, signal: 'Short', color: '#ef4444', tag: 'dn' },
+  { asset: 'TSX Composite',  corr: 0.31, beta: 0.28, signal: 'Neutral', color: '#f5c842', tag: 'neu' },
+  { asset: 'TSX Energy',     corr: 0.75, beta: 0.91, signal: 'Long', color: '#22c55e', tag: 'up' },
+  { asset: 'US 10Y Yield',   corr: -0.68, beta: -0.09, signal: 'Short', color: '#ef4444', tag: 'dn' },
+  { asset: 'HY Spreads',     corr: 0.61, beta: 0.78, signal: 'Wide', color: '#ef4444', tag: 'dn' },
+  { asset: 'USD Index',      corr: -0.31, beta: -0.22, signal: 'Neutral', color: '#f5c842', tag: 'neu' },
+  { asset: 'Copper',         corr: -0.45, beta: -0.38, signal: 'Short', color: '#ef4444', tag: 'dn' },
+];
+
+const tbody = C('corrBody');
+corrData.forEach(r => {
+  const tr = document.createElement('tr');
+  const corrColor = r.corr > 0.5 ? '#22c55e' : r.corr < -0.5 ? '#ef4444' : '#f5c842';
+  const sigStyle = r.tag === 'up' ? 'color:#22c55e' : r.tag === 'dn' ? 'color:#ef4444' : 'color:#f5c842';
+  tr.innerHTML = `
+    <td class="corr-label">${r.asset}</td>
+    <td style="color:${corrColor};font-weight:700">${r.corr > 0 ? '+' : ''}${r.corr.toFixed(2)}</td>
+    <td style="color:${corrColor}">${r.beta > 0 ? '+' : ''}${r.beta.toFixed(2)}</td>
+    <td style="${sigStyle};font-weight:700">${r.signal}</td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// ── EVENT TIMELINE ────────────────────────────────────────────
+const timelineEvents = [
+  { date: 'Mar 01, 2026', headline: 'IRGC conducts live-fire Hormuz exercises, closes 12-mile exclusion zone', impact: 'WTI +2.3%, Gold +1.1%, 10Y -8bps', sev: 'critical' },
+  { date: 'Feb 21, 2026', headline: 'Iran-backed Houthi forces strike 3 commercial vessels in Red Sea', impact: 'Brent spike +$4.20, Suez traffic -18%', sev: 'critical' },
+  { date: 'Feb 09, 2026', headline: 'IAEA confirms Iran enriching uranium to 84% — weapons-grade threshold', impact: 'Oil vol (OVX) surges to 42, Gold +$85', sev: 'critical' },
+  { date: 'Jan 28, 2026', headline: 'US Treasury designates 15 shadow fleet tankers carrying Iranian crude', impact: 'Iran exports est. -0.3mb/d, WTI +1.8%', sev: 'high' },
+  { date: 'Jan 15, 2026', headline: 'Israel conducts airstrikes on Iranian-linked militia in Iraq', impact: 'Geopolitical risk index +12pts', sev: 'critical' },
+  { date: 'Jan 04, 2026', headline: 'Iran seizes UK-flagged tanker in Gulf of Oman — crew of 24 detained', impact: 'Insurance war-risk premiums +35%, WTI +1.2%', sev: 'high' },
+  { date: 'Dec 19, 2025', headline: 'JCPOA negotiations collapse; EU re-imposes nuclear-related sanctions', impact: 'Diplomatic track closed; market reprices tail risk', sev: 'high' },
+  { date: 'Dec 04, 2025', headline: 'Chinese state refiners quietly reduce Iranian crude purchases', impact: 'Iran exports -0.2mb/d; shadow fleet activity increases', sev: 'medium' },
+];
+
+const tl = C('timeline');
+timelineEvents.forEach((ev, i) => {
+  const item = document.createElement('div');
+  item.className = 'tl-item';
+  const dotColor = ev.sev === 'critical' ? '#ef4444' : ev.sev === 'high' ? '#f97316' : '#eab308';
+  const badgeClass = `sev-${ev.sev}`;
+  item.innerHTML = `
+    <div class="tl-dot-wrap">
+      <div class="tl-dot" style="background:${dotColor}"></div>
+      ${i < timelineEvents.length - 1 ? '<div class="tl-line"></div>' : ''}
+    </div>
+    <div class="tl-content">
+      <div class="tl-date">${ev.date}</div>
+      <div class="tl-headline">${ev.headline}</div>
+      <div class="tl-impact">${ev.impact}</div>
+      <span class="tl-badge ${badgeClass}">${ev.sev}</span>
+    </div>
+  `;
+  tl.appendChild(item);
+});
+
+// ── TICKER ────────────────────────────────────────────────────
+const tickerItems = [
+  { label: 'WTI', val: '$81.42', chg: '+2.3%', up: true },
+  { label: 'BRENT', val: '$85.17', chg: '+2.1%', up: true },
+  { label: 'GOLD', val: '$2,941', chg: '+1.1%', up: true },
+  { label: 'SILVER', val: '$33.14', chg: '+0.8%', up: true },
+  { label: 'NG', val: '$3.42', chg: '+1.4%', up: true },
+  { label: 'COPPER', val: '$4.18', chg: '-0.6%', up: false },
+  { label: 'SPX', val: '5,648', chg: '-0.8%', up: false },
+  { label: 'TSX', val: '24,821', chg: '+0.4%', up: true },
+  { label: 'VIX', val: '22.8', chg: '+2.4', up: false },
+  { label: 'US10Y', val: '4.28%', chg: '-8bps', up: false },
+  { label: 'HY SPD', val: '312bps', chg: '+18', up: false },
+  { label: 'OVX', val: '38.4', chg: '+4.1', up: false },
+  { label: 'USDCAD', val: '1.388', chg: '+0.4%', up: false },
+  { label: 'IR RISK', val: '78/100', chg: '+5', up: false },
+];
+
+function buildTicker(items) {
+  return items.map(it => `
+    <div class="tick-item">
+      <span class="tick-label">${it.label}</span>
+      <span class="tick-val">${it.val}</span>
+      <span class="tick-chg ${it.up ? 'up' : 'dn'}">${it.chg}</span>
+    </div>
+  `).join('');
+}
+const tickerHtml = buildTicker(tickerItems);
+C('ticker').innerHTML = tickerHtml + tickerHtml; // doubled for seamless loop
+
+// ── CLOCK ─────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  const s = now.toUTCString().replace('GMT', 'UTC');
+  C('clock').textContent = s.slice(5, 25) + ' UTC';
+  C('lastUpdate').textContent = now.toLocaleTimeString();
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── LIVE DATA SIMULATION ──────────────────────────────────────
+function nudge(val, pct=0.002) {
+  return val * (1 + (Math.random() - 0.5) * 2 * pct);
+}
+
+let live = {
+  wti: 81.42, brent: 85.17, gold: 2941, silver: 33.14,
+  spx: 5648, tsx: 24821, t10y: 4.28, hy: 312
+};
+
+function updateLiveStats() {
+  live.wti   = nudge(live.wti, 0.001);
+  live.brent = nudge(live.brent, 0.001);
+  live.gold  = nudge(live.gold, 0.0008);
+  live.spx   = nudge(live.spx, 0.0012);
+
+  C('wti-val').textContent  = '$' + live.wti.toFixed(2);
+  C('brent-val').textContent = '$' + live.brent.toFixed(2);
+  C('gold-val').textContent  = '$' + Math.round(live.gold).toLocaleString();
+  C('spx-val').textContent   = Math.round(live.spx).toLocaleString();
+  C('spread-val').textContent = '$' + (live.brent - live.wti).toFixed(2);
+}
+setInterval(updateLiveStats, 3000);
+
+</script>
+</body>
+</html>
